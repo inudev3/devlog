@@ -14,7 +14,7 @@ module.exports = {
     name: `정인우`,
     bio: {
       role: `개발자`,
-      description: ['사람에 가치를 두는', '능동적으로 일하는', '이로운 것을 만드는'],
+      description: ["개발 좋아하는"],
       thumbnail: 'john_mayer.png', // Path to the image in the 'asset' folder
     },
     social: {
@@ -42,15 +42,7 @@ module.exports = {
       },
       // ========================================================
       // ========================================================
-      {
-        date: '2021.02 ~',
-        activity: '개인 블로그 개발 및 운영',
-        links: {
-          post: '/gatsby-starter-zoomkoding-introduction',
-          github: 'https://github.com/zoomkoding/zoomkoding-gatsby-blog',
-          demo: 'https://www.zoomkoding.com',
-        },
-      },
+
     ],
 
     projects: [
