@@ -7,7 +7,7 @@ tags: spring security
 categories: 블로그
 ---
 출처: https://www.marcobehler.com/guides/spring-security
-spring security에 대한 글 중 너무나 친절히 기술한 포스트가 있어 번역해보았다.
+아래 글은 위 포스팅의 버녕
 
 # 스프링 시큐리티
 
@@ -191,4 +191,80 @@ public abstract class WebSecurityConfigurerAdapter implements
 
 이 디폴트 구현이 스프링 시큐리티를 적용하면 바로 로그인 페이지가 나오는 이유이다.
 
-그럼 이제 `BasicAuthFilter` 에 대해 알아보자.
+그럼 이제 `BasicAuthFilter` 에 대해 알아
+
+BasicAuthFilter는 유저명과 비밀번호를 추출한다고 했는데, 이 인증정보들을 어디서 확인하는 걸까?
+
+이를 알기 위해서는 Spring Security 인증이 어떻게 이루어지는지를 알아야 한다.
+
+Spring Security에서 인증(Authentication)에는 3가지 시나리오가 있다.
+
+1. 데이터베이스 테이블 등에 저장된 인증정보(유저명, 비밀번호)가 있어서 유저의 해싱된 비밀번호에 접근할 수 있는 경우. 가장 일반적인 경우이다.
+2. 유저의 해싱된 비밀번호의 접근할 수 없는 경우로, 인증정보가 써드 파티 인증 관리 서비스 제품 등의 다른 곳에 저장된 경우이다. 보다 드문 경우라고 할 수 있다. `Atlassia crowd`등이 이러한 써드 파티 제품으로 인증을 위한 REST 서비스를 제공한다.
+3. OAuth2나 OpenId 등과 JWT를 조합하여 사용하는 경우. 이 경우는 OAuth2를 다루는 별도의 장에서 알아본다.
+
+시나리오에 따라 각기 다른 스프링 빈을 등록해야 스프링 시큐리티가 정상적으로 작동하며, 그렇지 않을 경우 예외가 발생하기 때문에 주의해야 한다.(`PassWordEncoder` 빈을 등록하지 않았을 때 NPE가 발생하는 등)
+
+우선 1번과 2번 시나리오에 따른 빈을 알아보자.
+
+**1:UserDetailService: 유저의 해싱된 비밀번호에 접근할 수 있는 경우**
+
+데이터 베이스에 유저 정보를 저장하는 테이블이 있고, 거기에 유저명과 해싱된 비밀번호 칼럼이 있다고 가정하자.
+
+이 경우  인증이 동작하기 위해서 스프링 시큐리티는 2개의 빈을 필요로 한다.
+
+1. UserDetailsService 빈.
+2. PasswordEncoder 빈.
+
+UserDetailService 빈은 다음과 같이 간단하게 정의할 수 있다.
+
+```java
+@Bean
+public UserDetailsService userDetailsService() {
+    return new MyDatabaseUserDetailsService(); // (1)
+}
+```
+
+1.  MyDatabaseUserDetailsService는 UserDetailsService의 구현체이며, UserDetailsService는 하나의 메서드 만을 가지는 매우 간단한 인터페이스이다. 이 메서드는 UserDetails 객체를 반환한다.
+
+```java
+public class MyDatabaseUserDetailsService implements UserDetailsService {
+
+	UserDetails loadUserByUsername(String username) throws UsernameNotFoundException { // (1)
+         // 1. 유저 테이블에서 유저명으로 유저정보를 조회한다. 만약 조회에 실패하면 UsernameNotFoundException 예외를 발생시킨다.
+         // 2. 유저정보를 UserDetails 객체로 감싸 반환한다.
+        return someUserDetails;
+    }
+}
+
+public interface UserDetails extends Serializable { // (2)
+
+    String getUsername();
+
+    String getPassword();
+
+    // <3> 이 이상의 메서드들이 가능함
+    // isAccountNonExpired,isAccountNonLocked,
+    // isCredentialsNonExpired,isEnabled
+}
+```
+
+1. UserDetailService는 유저명으로 UserDetails를 불러온다.  패스워드를 받는게 아니라 유저명을 단 한개뿐인 인자로 받는다는 점에 주의하자.
+2. UserDetails 인터페이스는 해싱된 패스워드를 반환하는 메서드와 유저명을 반환하는 메서드를 갖느다.
+3. UserDetails는 더 많은 메서드들을 가질 수 있다. 계정이 차단되었는지 유무, 인증정보가 유효한지, 혹은 유저의 권한이 무엇인지 등등. 여기선 다루지 않는다.
+
+그러므로 이 2가지 인터페이스들을 직접 구현하던지, 아니면 스프링 시큐리티가 기본으로 제공하는 구현을 사용하면 된다.
+
+스프링 시큐리티의 디폴트 구현체 외에도, 몇가지 구현체들을 추가적으로 제공한다.
+
+1. **JdbcUserDetailsManager**
+
+   JDBC 기반의 UserDetailService 구현체로 유저정보 테이블이나 칼럼 구조에 맞게 설정할 수 있다.
+
+2.  **InMemoryUserDetailsManager**
+
+    유저 정보를 메모리 상에서 관리하는 구현체로 테스팅에 용이하다.
+
+3. **org.springframework.security.core.userdetail.User**
+
+   which is a sensible, default UserDetails implementation that you could use. That would mean potentially mapping/copying between your entities/database tables and this user class. Alternatively, you could simply make your entities implement the UserDetails interface.
