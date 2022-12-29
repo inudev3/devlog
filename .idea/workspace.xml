@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="663327bb-feb9-443d-9268-d33722f0574d" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gatsby-meta-config.js" beforeDir="false" afterPath="$PROJECT_DIR$/gatsby-meta-config.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +59,7 @@
       <workItem from="1672336126484" duration="64000" />
       <workItem from="1672336197168" duration="21000" />
       <workItem from="1672336225319" duration="3223000" />
-      <workItem from="1672339513494" duration="984000" />
+      <workItem from="1672339513494" duration="1948000" />
     </task>
     <servers />
   </component>

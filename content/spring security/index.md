@@ -115,3 +115,80 @@ public class SecurityServletFilter extends HttpFilter {
 - **DefaultLoginPageGeneratingFilter**: 명시적으로 이 기능을 설정에서 끄지 않았다면 로그인 페이지를 자동으로 설정해준다. spring security를 설정하면 기본으로 로그인 페이지가 보이는 이유가 이 필터 때문이다.
 - **DefaultLogoutPageGeneratingFilter**: 명시적으로 기능을 설정에서 끄지 않았다면 로그아웃 페이지를 자동으로 설정해준다.
 - **FilterSecurityInterceptor**: 권한체크 과정을 수행한다.
+
+
+### Spring Security 설정
+
+Spring Security를 설정하기 위해서는 다음 2가지를 충족하는 클래스가 있어야 한다.
+
+1. `@EnableWebSecurity` 어노테이션이 붙어있고,
+2. 설정 DSL 메소드를 을 제공하는 `WebSecurityConfigurerAdapter` 클래스를 상속받아야 한다. 이 DSL 메소드로 어플리케이션의 어떤 URI를 허용할지/ 보호할지 유무와 어떤 보호수단을 적용하거나 적용하지 말지를 설정한다.
+
+설정 클래스 예시는 다음과 같다.
+
+```java
+@Configuration
+@EnableWebSecurity // (1)
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter { // (1)
+
+  @Override
+  protected void configure(HttpSecurity http) throws Exception {  // (2)
+      http
+        .authorizeRequests()
+          .antMatchers("/", "/home").permitAll() // (3)
+          .anyRequest().authenticated() // (4)
+          .and()
+       .formLogin() // (5)
+         .loginPage("/login") // (5)
+         .permitAll()
+         .and()
+      .logout() // (6)
+        .permitAll()
+        .and()
+      .httpBasic(); // (7)
+  }
+}
+```
+
+1. 설정 빈에 사용하는 스프링 @Configuration 어노테이션과 @EnableWebSecurity 어노테이션을 사용하고, WebSecurityConfigurerAdapter를 상속한다.
+2. adapter 클래스의 configure(HttpSecurity) 메서드를 상속하여 필터체인을 설정하는 DSL을 사용할 수 있다.
+3. 이 예시에서,  *`/`* 나 *`/home`*  경로로 가는 모든 요청은 허용되므로 유저는 인증을 거칠 필요가 없다. 예시에서 처럼 `antMatcher` 를 사용하면 (*, \*\*, ?) 와 같은 와일드카드 문자를 사용할 수 이
+4. 그 외의 모든 요청은 우선 인증을 필요로 한다.
+5. 예시에서는 는 스프링의 디폴트 로그인 페이지가 아닌 커스텀한 `/login` 를 갖는 로그인 페이지를 통해 `formLogin` 을 할 수 있게 허용하고 있다. permitAll로 로그인 전이더라도 `/login` 페이지에 항상 접근할 수 있게끔 한다. 로그인 되지 않은 상태에서 `/login` 페이지에 접근할 수 없다면 곤란한 상황이 발생할 것이다.
+6. 로그아웃 페이지도 동일하다.
+7. 거기에 더해 httpBasic 메서드를 통해 인증에 필요한 기본 HTTP Auth 헤더를 전달한다.
+
+익숙해 지는데 시간이 걸리겠지만,  `configure` 메서드에서 다음 사항을 명시해야 한다는 점을 기억하자.
+
+What is important for now, is that *THIS* *`configure`* method is where you specify:
+
+1. 어떤 URL에 보호를 적용할지 (`authenticated()`) 그리고 어떤 경로를 허용할지 (`permitAll()`).
+2. 어떤 인증 수단을 사용할지(`formLogin()`, `httpBasic()`) 그리고 그 수단을 어떻게 적용할지
+3. 한마디로 말해 어플리케이션의 전체 보안 설정
+
+참고로, 디폴트 `configure` 메서드의 모습은 다음과 같다.
+
+```java
+public abstract class WebSecurityConfigurerAdapter implements
+		WebSecurityConfigurer<WebSecurity> {
+
+    protected void configure(HttpSecurity http) throws Exception {
+            http
+                .authorizeRequests()
+                    .anyRequest().authenticated()  // (1)
+                    .and()
+                .formLogin().and()   // (2)
+                .httpBasic();  // (3)
+        }
+}
+```
+
+1. 어떤 경로를 접근하던지 상관없이 인증을 필요로 한다.
+2. 스프링 디폴트 formLogin()이 설정되어 있다.
+3. httpBasic 인증도 설정되어 있다.(http auth 헤더)
+
+
+
+이 디폴트 구현이 스프링 시큐리티를 적용하면 바로 로그인 페이지가 나오는 이유이다.
+
+그럼 이제 `BasicAuthFilter` 에 대해 알아보자.
