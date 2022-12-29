@@ -18,7 +18,7 @@ module.exports = {
       thumbnail: 'john_mayer.png', // Path to the image in the 'asset' folder
     },
     social: {
-      github: `https://github.com/inudev5`, // `https://github.com/zoomKoding`,
+      github: `https://github.com/inudev5`, // `https://github.np/zoomKoding`,
       linkedIn: ``, // `https://www.linkedin.com/in/jinhyeok-jeong-800871192`,
       email: `inust33@gmail.com`, // `zoomkoding@gmail.com`,
     },
