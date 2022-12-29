@@ -6,6 +6,8 @@ author: 줌코딩
 tags: spring security 
 categories: 블로그 featured
 ---
+출처: https://www.marcobehler.com/guides/spring-security
+spring security에 대한 글 중 너무나 친절히 기술한 포스트가 있어 번역해보았다.
 
 # 스프링 시큐리티
 
