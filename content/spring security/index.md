@@ -2,12 +2,13 @@
 emoji: 🧢
 title: spring security
 date: '2022-12-30 03:00:00'
-author: 줌코딩
+author: inu
 tags: spring security 
 categories: 블로그
 ---
 출처: https://www.marcobehler.com/guides/spring-security
-아래 글은 위 포스팅의 버녕
+아래 글은 위 원문 포스팅의 번역글입니다.
+원문 포스팅에는 이해를 돕는 보다 자세한 이미지
 
 # 스프링 시큐리티
 
@@ -268,3 +269,8 @@ public interface UserDetails extends Serializable { // (2)
 3. **org.springframework.security.core.userdetail.User**
 
    which is a sensible, default UserDetails implementation that you could use. That would mean potentially mapping/copying between your entities/database tables and this user class. Alternatively, you could simply make your entities implement the UserDetails interface.
+
+
+
+```toc
+```
