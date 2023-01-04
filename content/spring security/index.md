@@ -268,7 +268,250 @@ public interface UserDetails extends Serializable { // (2)
 
 3. **org.springframework.security.core.userdetail.User**
 
-   which is a sensible, default UserDetails implementation that you could use. That would mean potentially mapping/copying between your entities/database tables and this user class. Alternatively, you could simply make your entities implement the UserDetails interface.
+   엔티티나 데이터베이스 테이블과의 매핑 측면에서 어느 정도 쓸만한 기본 UserDetails 구현체이다. 대안으로는 역으로 엔티티가 UserDetails 인터페이스를 구현하도록 설계하는 방법이 있다.
+
+그럼 이제 전체적인 UserDetailsService의 워크 플로우를 살펴보자.
+
+1. 필터에서 사용자명/비밀번호 정보를 HTTP 기본 Auth 헤더로부터 추출한다. 이 동작은 자동으로 일어난다.
+2. 앞서 구현한 *MyDatabaseUserDetailsService* 를 호출해 데이터베이스에서 유저를 조회한 뒤 이를 UserDetails 객체로 감싸서 반환한다. UserDetails 객체에는 해싱된 비밀번호가 들어있다.
+3. HTTP 기본 Auth 헤더로부터 추출한 비밀번호를 자동으로 해싱하여, 이를 UserDetails 객체로부터 전달받은 해싱된 비밀번호와 비교한다. 둘이 일치하면, 유저는 인증을 통과한다.
+
+그런데 스프링 시큐리티가 3번 과정에서 어떻게 자동으로 비밀번호를 해싱해주는 걸까? 바로 `PasswordEncoder` 빈을 사용한다.
+
+스프링 시큐리티가 자동으로 패스워드 해싱 알고리즘을 등록해주진 않기 때문에 직접 빈을등록해 명시해줘야 한다.
+
+모든 비밀번호에 동일한 해싱 알고리즘을 적용하고 싶다면 `SecurityConfig` 설정 클래스에 등록해준다. 예제는 BCrypt 알고리즘을 사용했다.
+
+```java
+@Bean
+public BCryptPasswordEncoder bCryptPasswordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+```
+
+하지만 만약, 여러 해싱 알고리즘 정책을 어플리케이션에서 사용한다면 다음과 같이 *delegating encoder*를 등록해줘야 한다.
+
+```java
+@Bean
+public PasswordEncoder passwordEncoder() {
+    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+}
+```
+
+*delegating encoder* 는 다음과 같이 동작한다. UserDetail에 들어있는 해싱된 패스워드(바로 데이터베이스 테이블에 들어있는 패스워드) 는 접두어로 해싱 방법을 가리키는 단어를 갖는다. 예를 들어 다음과 같다.
+
+스프링 시큐리티는 이 패스워드를 다음과 같이 처리한다.
+
+1. 패스워드를 읽고 해싱 알고리즘을 가리키는 접두어를 제거한다. (`{bcrypt}` 나 `{sha256}` 등)
+2. 접두어의 값에 따라 알맞는 PasswordEncoder를 사용한다.
+3. 필터를 거쳐 추출된 비밀번호를 선택된 PasswordEncoder로 해싱한다. 해싱된 비밀번호를 저장된 비밀번호와 비교한다.
+
+즉 UserDetailsService가 저장된 비밀번호를 갖고 오면, PasswordEncoder가 접두어로부터 해싱 알고리즘을 읽어 자동으로 필터로 들어온 입력 비밀번호를 해싱하고 비교한다.
+
+요약하면, 스프링 시큐리티를 사용하며 고객의 비밀번호를 직접 접근할 수 있다면 아래의 두가지가 필요하다.
+
+1. UserDetailsService를 등록. 커스텀 구현체를 사용해도 되고, 스프링 디폴트 구현을 사용해도 됨.
+2. PasswordEncoder를 등록
+
+**2:Authentication Provider:유저의 해싱된 비밀번호에 접근할 수 없는 경우**
+
+인증 관리 서비스로서 Atlassian Crowd를 사용 중이라고 가정해보자.  이제 모든 인증정보는 Atlassian Crowd에 저장되고 데이터베이스 테이블에는 아무것도 없다.
+
+이는 아래 2가지를 의미한다.
+
+1. 어플리케이션에 더 이상 유저 정보가 없으며, 단순히 Crowd 서비스에게 비밀번호를 달라고 요청하는 방식은 작동하지 않는다.
+2. 하지만 대신에 유저정보를 갖고 로그인을 요청할 REST API를 갖는다.(예를 들어 Crowd의 `/rest/usermanagement/1/authentication` REST 엔드포인트에 POST 요청을 할 수 있다)
+
+이 경우, 이제 더 이상 UserDetailsService는 필요 없으며, 대신 `AuthenticationProvider` 인터페이스를 구현하여 빈으로 등록해야 한다.
+
+AuthenticationProvider는 하나의 메서드로 구성되며, 단순하게 구현해보면 아래와 같다.
+
+```java
+public class AtlassianCrowdAuthenticationProvider implements AuthenticationProvider {
+
+    Authentication authenticate(Authentication authentication)  // (1)
+            throws AuthenticationException {
+        String username = authentication.getPrincipal().toString(); // (1)
+        String password = authentication.getCredentials().toString(); // (1)
+
+        User user = callAtlassianCrowdRestService(username, password); // (2)
+        if (user == null) {                                     // (3)
+            throw new AuthenticationException("could not login");
+        }
+        return new UserNamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), user.getAuthorities()); // (4)
+    }
+  // other method ignored
+}
+```
+
+1. 유저명 만을 인자로 받았던 `UserDetailsService` 의 *loadByUsername* 메서드와 비교해 보면, 이 메서드는 (일반적으로는 유저명과 비밀번호로 구성된) 전체 인증 정보에 접근할 수 있는 것을 볼 수 있다.
+2. 유저를 인증하기 위해 REST API를 호출하거나 그 외 원하는 뭐든지 할 수 있다.
+3. 인증이 실패하면 예외를 던진다.
+4. 인증이 성공하면, 이름도 긴 `UsernamePasswordAuthenticationToken` 을 반환해야 한다. 이 객체는 *Authentication* 인터페이스의 구현체로, boolen *authenticated* 필드가 true 인 상태여야 한다는 조건을 수반한다.
+
+*AuthenticationProvider*의 워크플로우를 요약하자면 다음과 같다.
+
+1. 자동으로 http 기본 Auth 헤더에서 유저 인증정보를 추출한다.
+2. `AuthenticationProvider` 를 호출해서 대신 인증을 수행하도록 REST 호출 등을 수행한다.
+
+UserDetailsService의 경우와 달리, 비밀번호 해싱 등이 없이 서드 파티 서비스에 인증정보 확인을 위임한다.
+
+Spring Security를 사용하면서 유저 비밀번호에 대해 접근할 수 없는 경우, `AuthenticationProvider` 를 구현하여 등록하라.
+
+### Spring Secuirty와 권한(Authority)
+
+지금까지는 인증에 대해서만 다뤄보았다. 이제부터는, 권한과 역할을 Spring Security가 어떻게 다루는지 알아보자.
+
+### 권한(Authorization)
+
+권한이란 뭘까? 이커머스 쇼핑몰 사이트가 있다고 상상해보자. 이 사이트는 다음의 부분으로 이루어져 있을 것이다. 각 부분들 옆 괄호에는 url을 예시로 적었다.
+
+- 쇼핑몰 (*`www.youramazinshop.com)`*
+- 쇼핑몰 고객센터 상담원이 로그인하여 문의한 고객이 구입한 상품이나, 배송 중인 상품을 조회할 수 있는 페이지 (*`www.youramazinshop.com/callcenter`)*
+- 관리자가 고객센터 상담원을 관리하거나 다른 기술적인 부분들을 관리할 수 있는, 분리된 페이지.(*`www.youramazinshop.com/admin)`*
+
+이제 단지 유저를 인증하는 것만으로 충분치 않기 때문에 다음 사항들을 고려해야 한다.
+
+- 고객은 당연히 콜센터나 관리자 페이지에 접근할 수 없어야 한다. 오직 쇼핑몰만 사용할 수 있다.
+- 콜센터 상담원은 관리자 페이지를 이용할 수 없다.
+- 반면 관리자는 쇼핑몰이나 콜센터 페이지를 이용할 수 있다.
+
+요약하자면 각기 다른 유저들에 대해, 각각의 권한이나 역할에 따라 다른 접근 권한을 부여하고 싶다.
+
+### 권한과 역할
+
+간단하다.
+
+- 권한은 단지 문자열이다. ADMIN, ROLE_ADMIN,12345, 뭐든지 다 될 수 있다.
+- 역할은 접두어로 *ROLE*_ 이 붙는 권한이다. 따라서 *ADMIN*이라는 `ROLE` 은 *ROLE_ADMIN* 이라는 권한 `AUTHORITY` 와 동일하다.
+
+권한과 역할의 구분은 순수하게 개념적인 부분이며, 많은 사람들이 이 부분에서 혼란스러워하지만 명쾌한 답은 없다. 데이터베이스 세계에서 두 개념은 내부적으로 완전하게 동일하게 동작한다.
+
+### GrantedAuthorities와 SimpleGrantedAuthorities
+
+Spring Security는 물론 문자열만 가지고 권한을 확인하지는 않는다. 권한을 나타내는 자바 클래스들이 제공되며, SimpleGrantedAuthorities가 대표적이다.
+
+```java
+public final class SimpleGrantedAuthority implements GrantedAuthority {
+
+	private final String role;
+
+  @Override
+	public String getAuthority() {
+		return role;
+	}
+}
+```
+
+권한에 관련된 다른 객체들을 필드로 가지는 클래스들이 더 있지만, 여기서는 다루지 않는다.
+
+그렇다면 인증 과정에서 권한을 어디에 저장하고 어떻게 가져올까?
+
+앞서 인증과정의 2가지 시나리오를 다뤄보았다. 해당시나리오별로 권한 체크 과정을 파악해보자.
+
+**1. UserDetailsService**
+
+첫번째는 어플리케이션에서 유저정보를 직접 저장하는 경우인 UserDetailsService가 되겠다. 직접 유저정보를 저장하기 위해서 데이터베이스에 `Users` 라는 테이블이 있다고 가정하자.
+
+이 테이블에 단순하게 `Authorities` 라는 칼럼하나를 추가하도록 스키마를 변경할 수 있다. 이 예제에서는 이 칼럼을 단순한 varchar 칼럼으로 취급할 것이지만, 실제로는 쉼표로 구분된 다수의 문자열이 올 수 있다. 혹은, 아예 `Authorities`를 테이블로 분리할 수 있지만, 이 예제에서는 하지 않는다.
+
+당신은 권한 *문자열* 을 데이터베이스에 저장하게 될 것이다. 가끔 이 문자열들이 *ROLE_*  접두어로 시작하는 경우가 있는데, 스프링에서는 이러한 *권한* 들이 곧 *역할* 이기도 하다는 점을 알면 된다.
+
+이제 남은 건 UserDetailsService가 `authorities` 칼럼을 조회하여 반환할 UserDetails 객체에 넣어주는 일 뿐이다.
+
+```java
+public class MyDatabaseUserDetailsService implements UserDetailsService {
+
+  UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+     User user = userDao.findByUsername(username);
+     List<SimpleGrantedAuthority> grantedAuthorities = user.getAuthorities().map(authority -> new SimpleGrantedAuthority(authority)).collect(Collectors.toList()); // (1)
+     return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), grantedAuthorities); // (2)
+  }
+
+}
+```
+
+1. 단순하게 데이터베이스에서 authorities 칼럼을 조회하여 *SImpleGrantedAuthority* 객체로 매핑한다. 복수의 문자열을 담고 있다면 컬렉션이 될 것이다.
+2. 스프링 시큐리티가 디폴트로 제공하는 UserDetails 객체로 이를 감싸 반환한다. 물론 직접 구현체를 만들어도 된다.
+
+**2. AuthenticationProvider**
+
+써드파티 인증 앱을 사용하는 경우라면, 우성 해당 앱이 권한에 대해서 어떤 개념을 적용시키는지를 알아야 한다. `Atlassian Crowd` 의 경우, `role` 의 개념을 차용하는 대신 `group` 은 사용이 중단되었다.
+
+따라서 이러한 앱의 스펙에 맞게 AuthenticationProvider의 구현을 변경해줘야 한다.
+
+```java
+public class AtlassianCrowdAuthenticationProvider implements AuthenticationProvider {
+
+    Authentication authenticate(Authentication authentication)
+            throws AuthenticationException {
+        String username = authentication.getPrincipal().toString();
+        String password = authentication.getCredentials().toString();
+
+        atlassian.crowd.User user = callAtlassianCrowdRestService(username, password); // (1)
+        if (user == null) {
+            throw new AuthenticationException("could not login");
+        }
+        return new UserNamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), mapToAuthorities(user.getGroups())); // (2)
+    }
+	    // other method ignored
+}
+```
+
+1. 예제는 실제 `Atlassian Crowd` 를 사용하는 코드는 아니고, `Atlassian Crowd` 스펙에 맞게 작성해본 슈도 코드이다. REST 서비스를 통해 인증한 뒤 JSON 결과값을 받아 이를 atlassian.crowd.User 객체로 변환한다.
+2. 유저는 어떤 그룹 또는 여러 그룹 소속일 수도 있고, 그룹은 단지 문자열일 뿐이다. 이를 스프링에서 디폴트로 제공하는 `SimpleGrantedAuthority` 구현체에 매핑하면 된다.
+
+### ****WebSecurityConfigurerAdapter 와 권한(Authorities)****
+
+지금까지는 권한을 저장하고 조회하는 기능에 집중했다.  그렇다면 제각기 다른 권한을 필요로하는 여러 URL에 대한 접근을 어떻게 설정할 수 있을까? ****WebSecurityConfigurerAdapter****의 설정 메서드 빈에서 DSL을 통해 가능하다.
+
+```java
+@Configuration
+@EnableWebSecurity
+public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+        http
+          .authorizeRequests()
+            .antMatchers("/admin").hasAuthority("ROLE_ADMIN") // (1)
+            .antMatchers("/callcenter").hasAnyAuthority("ROLE_ADMIN", "ROLE_CALLCENTER") // (2)
+            .anyRequest().authenticated() // (3)
+            .and()
+         .formLogin()
+           .and()
+         .httpBasic();
+	}
+}
+```
+
+1. `/admin` 주소에 접근하기 위해서는 인증과 더불어 `ADMIN` 역할이 필요하다
+2. *`/callcenter` 주소에* 접근하기 위해서는 인증과 더불어 `ADMIN`   또는 `CALLCENTER`역할이 필요하다
+3. 그 이외에 모든 요청에 대해서는 특정한 역할이 필요없지만 기본적으로 인증되어야 한다.
+
+위 코드는 아래 코드와 완전히 동일하다.
+
+```java
+ http
+    .authorizeRequests()
+      .antMatchers("/admin").hasRole("ADMIN") //(1)
+			.antMatchers("/callcenter").hasAnyRole("ADMIN","CALLCENTER") //(2)
+```
+
+1. hasAuthority를 호출하는 대신에 hasRole을 호출하면 스프링 시큐리티는 인증된 유저의 정보를 조회하여 `ROLE_ADMIN` 이라는 권한을 찾는다.
+2. hasAnyAuthority를 호출하는 대신에 hasAnyRole 스프링 시큐리티는 인증된 유저의 정보를 조회하여 `ROLE_ADMIN` 또는 `ROLE_CALLCENTER` 이라는 권한 중 하나를 찾는다.
+
+### hasAccess와 스프링 표현식
+
+마지막으로 권한을 설정하는 가장 강력한 방법으로 access가 있다. 이 메서드는 어떤 스프링 표현식이라도 사용하게 해준다.
+
+```java
+http
+    .authorizeRequests()
+      .antMatchers("/admin").access("hasRole('admin') and hasIpAddress('192.168.1.0/24') and @myCustomBean.checkAccess(authentication,request)")
+```
+
+1. 유저가 `admin` 역할이 있는지, 특정 ip주소를 사용했는지 확인하고 커스텀한 빈의 메서드를 적용시키고 있다.
 
 
 
