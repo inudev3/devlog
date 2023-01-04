@@ -30,7 +30,11 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+<<<<<<< HEAD
     &quot;last_opened_file_path&quot;: &quot;/Users/inust/projects/devlog&quot;,
+=======
+    &quot;last_opened_file_path&quot;: &quot;/Users/jeong-in-u/IdeaProjects/devlog&quot;,
+>>>>>>> 5832292197d529c4f412aca2ce22ef1a33d73c34
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -59,12 +63,19 @@
       <workItem from="1672336126484" duration="64000" />
       <workItem from="1672336197168" duration="21000" />
       <workItem from="1672336225319" duration="3223000" />
+<<<<<<< HEAD
       <workItem from="1672339513494" duration="5306000" />
       <workItem from="1672404829213" duration="3047000" />
       <workItem from="1672506311454" duration="597000" />
       <workItem from="1672510046674" duration="15000" />
       <workItem from="1672510083636" duration="598000" />
       <workItem from="1672676165401" duration="1773000" />
+=======
+      <workItem from="1672339513494" duration="4168000" />
+      <workItem from="1672379309036" duration="14000" />
+      <workItem from="1672379338640" duration="1671000" />
+      <workItem from="1672387517154" duration="1208000" />
+>>>>>>> 5832292197d529c4f412aca2ce22ef1a33d73c34
     </task>
     <servers />
   </component>

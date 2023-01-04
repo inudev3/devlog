@@ -23,3 +23,9 @@ public
 
 # Mac files
 .DS_Store
+.idea
+.prettierignore
+.prettierrc
+netlify.toml
+
+.cache
