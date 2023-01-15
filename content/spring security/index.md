@@ -4,7 +4,7 @@ title: spring security
 date: '2022-12-30 03:00:00'
 author: inu
 tags: spring security 
-categories: 블로그
+categories: spring
 ---
 출처: https://www.marcobehler.com/guides/spring-security
 아래 글은 위 원문 포스팅의 번역글입니다.
