@@ -1,5 +1,5 @@
 ---
-emoji:
+emoji: 🧢
 title: leetcode 1591. Strange Printer II
 date: '2023-01-16 03:00:00'
 author: inu
@@ -48,7 +48,4 @@ val n = targetGrid[0].size
         return seen.size==61
     }
 }
-```
-
-```toc
 ```

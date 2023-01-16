@@ -1,5 +1,5 @@
 ---
-emoji: 
+emoji: 🧢
 title: leetcode 1136.Parallel Courses
 date: '2023-01-15 03:00:00'
 author: inu
@@ -121,6 +121,3 @@ class Solution {
     }
 }
 ```
-
-  ```toc
-  ```

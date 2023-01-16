@@ -1,5 +1,5 @@
 ---
-emoji:
+emoji: 🧢
 title: leetcode 1203.Sort Items by Groups Respecting Dependencies
 date: '2023-01-16 03:00:00'
 author: inu
@@ -48,4 +48,3 @@ fun sortItems(n: Int, m: Int, group: IntArray, beforeItems: List<List<Int>>): In
 
     }
 }
-```
