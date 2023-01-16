@@ -1,12 +1,13 @@
 ---
 emoji: 
-title: leetcode 1136.Parallet Courses
+title: leetcode 1136.Parallel Courses
 date: '2023-01-15 03:00:00'
 author: inu
 tags: leecode topology-sort dfs bfs
 categories: algorithm
 ---
 1.BFS
+가장 간단하게 위상정렬과 BFS를 사용한 솔루션인데 한 학기에 들을 수 있는 과목의 수가 무제한이므로 queue size에 대해 모두 순회해야 한다. 
 
 ```kotlin
 class Solution {
@@ -114,9 +115,12 @@ class Solution {
              max=maxOf(max,length)
 
         }
+      
         return max
        
     }
 }
 ```
-```toc```
+
+  ```toc
+  ```
