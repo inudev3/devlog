@@ -1,12 +1,13 @@
 ---
 emoji:
-title: leetcode 269.Parallet Courses
+title: leetcode 269.Alien Dictionary
 date: '2023-01-15 03:00:00'
 author: inu
 tags: leecode topology-sort bfs
 categories: algorithm
 ---
 
+위상정렬은 맞는데 구현이 좀 까다롭다.
 
 ```kotlin
 class Solution {
