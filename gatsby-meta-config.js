@@ -14,7 +14,7 @@ module.exports = {
     name: `정인우`,
     bio: {
       role: `개발자`,
-      description: ["개발 좋아하는"],
+      description: ["몰입의 성취감을 사랑하는"],
       thumbnail: 'john_mayer.png', // Path to the image in the 'asset' folder
     },
     social: {
