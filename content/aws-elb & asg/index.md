@@ -1,7 +1,7 @@
 ---
 emoji:
 title: aws - elb & asg
-date: '2023-03-18 03:00:00'
+date: '2023-03-19 03:00:00'
 author: inu
 tags: aws elb asg udemy
 categories: aws
