@@ -1,6 +1,6 @@
 ---
 emoji:
-title: aws - elb & asg
+title: aws - Elastic Load Balancer & Auto Scaling Group
 date: '2023-03-19 03:00:00'
 author: inu
 tags: aws elb asg udemy
