@@ -3,7 +3,7 @@ module.exports = {
   description: `이누 데브 로그`,
   language: `ko`, // `ko`, `en` => currently support versions for Korean and English
   siteUrl: `http://inudevlog.com`,
-  ogImage: `/KingGnue2.jpg`, // Path to your in the 'static' folder
+  ogImage: `/KingGnu2.jpg`, // Path to your in the 'static' folder
   comments: {
     utterances: {
       repo: ``, // `zoomkoding/zoomkoding-gatsby-blog`,
