@@ -3,7 +3,7 @@ module.exports = {
   description: `이누 데브 로그`,
   language: `ko`, // `ko`, `en` => currently support versions for Korean and English
   siteUrl: `http://inudevlog.com`,
-  ogImage: `/KingGnu2.jpg`, // Path to your in the 'static' folder
+  ogImage: `/KingGnu2.jpeg`, // Path to your in the 'static' folder
   comments: {
     utterances: {
       repo: ``, // `zoomkoding/zoomkoding-gatsby-blog`,
@@ -15,7 +15,7 @@ module.exports = {
     bio: {
       role: `개발자`,
       description: ["몰입의 성취감을 사랑하는"],
-      thumbnail: 'KingGnu2.png', // Path to the image in the 'asset' folder
+      thumbnail: 'KingGnu2.jpeg', // Path to the image in the 'asset' folder
     },
     social: {
       github: `https://github.com/inudev5`, // `https://github.np/zoomKoding`,
