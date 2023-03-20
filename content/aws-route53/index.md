@@ -23,20 +23,26 @@ DNS 용어
 http://api.www.google.com 중,  api.www.google.com 을 전체 도메인, http를 프로토콜이라고 하며 둘을 합쳐서 url이라고 한다.
 
 가장 첫 DNS 쿼리가 발생하면, 로컬 DNS 서버로부터(ISP 사업자 등이 관리) 항상 루트 서버로 쿼리가 전달된다. 루트 서버는 최상단 TLD에 대해서 네임 서버 IP를 응답한다.
-.com NS 1.2.3.4
-즉 .com 도메인은 Name Server 타입 도메인이며 ip는 1.2.3.4이다. 이렇게 루트서버는 TLD에 대한 Name Server 유형의 응답만을 보낸다.
-그렇제 루트서버가 TLD DNS 서버 ip를 전달하면 , 다시 로컬 DNS 서버에서 TLD DNS 서버에 DNS 쿼리를 보내고 TLD DNS 서버는 SLD에 대한 네임 서버 IP를 응답한다.
-example.com NS 5.6.7.8
+
+ex) .com NS 1.2.3.4
+
+ .com 도메인은 Name Server 타입 도메인이며 ip는 1.2.3.4이다. 이렇게 루트서버는 TLD에 대한 Name Server 유형의 응답만을 보낸다.
+그렇게 루트서버가 TLD DNS 서버 ip를 전달하면 , 다시 로컬 DNS 서버에서 TLD DNS 서버에 DNS 쿼리를 보내고 TLD DNS 서버는 SLD에 대한 네임 서버 IP를 응답한다.
+
+ex)example.com NS 5.6.7.8
+
 역시 이번에도 도메인 타입은 Name Server이다.
 TLD DNS 서버와 Root DNS 서버는 ICANN이라는 단체에서 관리하는 서버이며, SLD DNS 서버부터는 도메인 등록기관에서 관리한다.
 SLD DNS 서버부터는 A타입 레코드 (도메인이 위치한 ip주소) 응답을 반환한다.
 최종 A타입 레코드를 전달받은 로컬 dns서버는 이를 캐싱하여, 다음부터는 동일한 dns이름에 대해캐시를 먼저 조회한다
-![[Pasted image 20230320112704.png]]
+
 
 레코드는 다음의 정보로 이루어져 있다.
-레코드 타입 - A, AAAA, CNAME, NS 등
-TTL - DNS리졸버(클라이언트의 DNS 조회 프로그램)에 캐싱된 레코드가 보관되는 기간. TTL이 클수록, Route53 등의 DNS Server에 부하가 덜어지지만, 레코드의 업데이트를 클라이언트에 반영되는 시간이 오래 걸린다.
-값 - DNS에 매칭되는 ip 주소 값
+- 레코드 타입 - A, AAAA, CNAME, NS 등
+- TTL - DNS리졸버(클라이언트의 DNS 조회 프로그램)에 캐싱된 레코드가 보관되는 기간. TTL이 클수록, Route53 등의 DNS Server에 부하가 덜어지지만, 레코드의 업데이트를 클라이언트에 반영되는 시간이 오래 걸린다.
+- 값 - DNS에 매칭되는 ip 주소 값
+
+### 레코드 타입
 
 - A
   ipv4에 매칭되는 도메인명
