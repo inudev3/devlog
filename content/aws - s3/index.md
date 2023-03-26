@@ -208,3 +208,6 @@ access points를 사용함으로써 S3 Bucket 보안을 단순화할 수 있음.
 ### S3 Object Lambda
 
 analytics 어플리케이션이 필요한 가공 데이터가 있을 때 이를 aws lambda function을 통해 가공할 수 있다. s3 origin access point로 부터 가져온 데이터를 변경하지 않고, 별도의 `s3 Object Lambda Access Point`  를 설치해 해당 액세스 포인트로 접근하면 . aws lamdba function 실행된다.
+
+```toc
+```

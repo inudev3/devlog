@@ -75,3 +75,6 @@ AWS Global Accelerator 여러 서버가 하나의 동일한 ip를 가지고, 트
 ### Field level encryption
 
 HTTPS와 비대칭키를 이용해 한 겹의 보안계층을 추가하는 것. POST 요청의 필드 레벨에서 민감한 정보를 암호화할 때, 유저와 가장 가까운 edge location에서 공개키를 사용해 암호화를 수행한다. 최종 목적지인 웹서버에서 비공개키를 사용하여 이를 복호화하고 데이터를 처리한다.
+
+```toc
+```
