@@ -3,7 +3,7 @@ module.exports = {
   description: `이누 데브 로그`,
   language: `ko`, // `ko`, `en` => currently support versions for Korean and English
   siteUrl: `http://inudevlog.com`,
-  ogImage: `/john_mayer.jpg`, // Path to your in the 'static' folder
+  ogImage: `/KingGnu2.jpeg`, // Path to your in the 'static' folder
   comments: {
     utterances: {
       repo: ``, // `zoomkoding/zoomkoding-gatsby-blog`,
@@ -11,11 +11,11 @@ module.exports = {
   },
   ga: '0', // Google Analytics Tracking ID
   author: {
-    name: `정인우`,
+    name: `Inu`,
     bio: {
       role: `개발자`,
       description: ["몰입의 성취감을 사랑하는"],
-      thumbnail: 'john_mayer.png', // Path to the image in the 'asset' folder
+      thumbnail: 'KingGnu2.jpeg', // Path to the image in the 'asset' folder
     },
     social: {
       github: `https://github.com/inudev5`, // `https://github.np/zoomKoding`,
@@ -63,18 +63,6 @@ module.exports = {
       },
       // ========================================================
       // ========================================================
-      {
-        title: '개발 블로그 테마 개발',
-        description:
-          '개발 블로그를 운영하는 기간이 조금씩 늘어나고 점점 많은 생각과 경험이 블로그에 쌓아가면서 제 이야기를 담고 있는 블로그를 직접 만들어보고 싶게 되었습니다. 그동안 여러 개발 블로그를 보면서 좋았던 부분과 불편했던 부분들을 바탕으로 레퍼런스를 참고하여 직접 블로그 테마를 만들게 되었습니다.',
-        techStack: ['gatsby', 'react'],
-        thumbnailUrl: 'blog.png',
-        links: {
-          post: '/gatsby-starter-zoomkoding-introduction',
-          github: 'https://github.com/zoomkoding/zoomkoding-gatsby-blog',
-          demo: 'https://www.zoomkoding.com',
-        },
-      },
     ],
   },
 };
