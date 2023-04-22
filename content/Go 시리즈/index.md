@@ -4,7 +4,7 @@ title: go 시리즈 #1
 date: '2023-04-17 03:00:00'
 author: inu
 tags: golang goroutine
-categories: Go 시리즈
+categories: golang
 ---
 go는  포인터의 라이프타임이 데이터보다 더 긴 경우, 해당 데이터를 자동으로 힙에 할당해준다. 이를 클로져라고 한다.
 예를 들어
