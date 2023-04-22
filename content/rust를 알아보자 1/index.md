@@ -1,7 +1,7 @@
 ---
 emoji:
 title: Rust를 알아보자 - 1부
-date: '2023-03-28 03:00:00'
+date: '2023-04-22 03:00:00'
 author: inu
 tags: Rust
 categories: Rust
