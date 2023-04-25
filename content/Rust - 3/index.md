@@ -196,3 +196,6 @@ tokio::spawn에 넘겨지는 future 클로져의 경우 스택프레임 보다 �
 
 Send/Sync는 다른 행위를 별도로 정의하지 않는 `marker` trait 이다. struct, enum , vecotr 등 compount type의 경우 내부 타입이 모두 send/sync면 자동으로 send/sync를 갖는다. `auto-trait`이다. auto-trait은  marker trait라고 보면 된다. (반대는 성립하지 않는다).
 Send는 해당 값을 다른 쓰레드에 전달할 수 있다(소유권을 넘길 수 있다)는 뜻이다. 거의 모든 타입은 Send trait을 가진다. 그러나 다른 쓰레드간에 공유가 허용되지 않는 `RC, MutexGuard`등의 타입이 예외에 해당된다. Mutex 자체가 아니라 MutexGuard임에 주의하자. 이는 하나의 쓰레드에서 건 lock을 다른 쓰레드에서 해제할 수 없다는 의미이다. Mutex 자체는 Send이다. 또한 `ThreadLocal state`과 관련된 drop 구현을 가지는 타입 또한 Send의 예외이다. (다른 쓰레드에서 drop될 수 없으므로)
+
+```toc
+```
